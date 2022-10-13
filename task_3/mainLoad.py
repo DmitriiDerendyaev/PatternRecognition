@@ -5,13 +5,13 @@ import PySimpleGUI as sg
 import os.path
 import cv2
 
-#
-# import taichi as ti
-#
-# ti.init(arch=ti.cpu)
-
-window = sg.Window("Demo", interface.layout, size=(1000, 700))
+window = sg.Window("Demo", interface.layout, size=(1300, 700))
 sg.theme('DarkTeal11')
+graph = window["-GRAPH-"]
+newGraph = window["-NEW_GRAPH-"]
+dragging = False
+start_point = end_point = prior_rect = None
+
 
 while True:
     event, values = window.read()
@@ -34,17 +34,55 @@ while True:
         window["-FILE LIST-"].update(fnames)
 
     if event == "-FILE LIST-":
-        try:
-            filename = os.path.join(
-                values["-FOLDER-"], values["-FILE LIST-"][0]
-            )
-            window["-TOUT-"].update(filename)
-            img = cv2.imread(filename)
+        filename = os.path.join(
+            values["-FOLDER-"], values["-FILE LIST-"][0]
+        )
+        window["-TOUT-"].update(filename)
+        img = cv2.imread(filename)
+        print(img)
 
-            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-            # first_image = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-            # second_image = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        func.displayGraph(img, graph)
+    if values["-Scalling-"]:
+        valueX = float(values["-ScallingX-"])
+        valueY = float(values["-ScallingY-"])
 
-            window['-IMAGE-'].Update(data=func.cv2ToGUI(img))
-        except:
-            pass
+        # func.scallingFrameCV2(img, valueX, valueY, newGraph)
+        func.displayGraph(func.scallingFrame(img, valueX, valueY), newGraph)
+
+    if values["-Shearing-"]:
+        valueX = float(values["-ShearingX-"])
+        valueY = float(values["-ShearingY-"])
+
+        func.displayGraph(func.shearingFrame(img, valueX, valueY), newGraph)
+
+    if values["-Rotation-"]:
+        angle = float(values["-Angle-"])
+        isGet = False
+
+        if event == "-GRAPH-":  # if there's a "Graph" event, then it's a mouse
+            x, y = values["-GRAPH-"]
+            if not dragging:
+                start_point = (x, y)
+                dragging = True
+                drag_figures = graph.get_figures_at_location((x, y))
+                lastxy = x, y
+            else:
+                end_point = (x, y)
+            if prior_rect:
+                graph.delete_figure(prior_rect)
+            delta_x, delta_y = x - lastxy[0], y - lastxy[1]
+            lastxy = x, y
+            if None not in (start_point, end_point):
+                if values['-Rotation-']:
+                    graph.draw_point((x, y), size=8)
+                    print(x, y)
+                    isGet = True
+        if(isGet):
+            func.displayGraph(func.rotationFrame(img, angle, x, y), newGraph)
+        else:
+            func.displayGraph(func.rotationFrame(img, angle, 225, 225), newGraph)
+
+
+
+
+window.close()
