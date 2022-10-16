@@ -135,35 +135,21 @@ def reflectionFrame(currentFrame, verticalAxis, horizontalAxis):
     return pictures
 
 def reflectionMatrix(currentFrame, verticalAxis, horizontalAxis):
-    img = cv2.cvtColor(currentFrame, cv2.COLOR_BGR2RGB)
-    # disable x & y axis
     plt.axis('off')
-    # show the image
-    # plt.imshow(img)
-    # plt.show()
-    # get the image shape
-    rows, cols, dim = img.shape
+    rows, cols, dim = currentFrame.shape
+    # if verticalAxis == -1 or horizontalAxis == -1:
     if horizontalAxis == -1:
         # transformation matrix for x-axis reflection
         M = np.float32([[1, 0, 0],
                         [0, -1, rows],
                         [0, 0, 1]])
-        reflected_img = cv2.warpPerspective(img, M, (int(cols), int(rows)))
-        # cv2.imshow("hot", reflected_img)
-    elif verticalAxis == -1:
+        currentFrame = cv2.warpPerspective(currentFrame, M, (int(cols), int(rows)))
+    if verticalAxis == -1:
     # transformation matrix for y-axis reflection
         M = np.float32([[-1, 0, cols],
                         [ 0, 1, 0   ],
                         [ 0, 0, 1   ]])
-        reflected_img = cv2.warpPerspective(img, M, (int(cols), int(rows)))
-    return reflected_img
-        # cv2.imshow("ver", reflected_img)
-    # apply a perspective transformation to the image
+        currentFrame = cv2.warpPerspective(currentFrame, M, (int(cols), int(rows)))
+    return currentFrame
 
-    # cv2.imshow("ver", reflected_img)
-    # # disable x & y axis
-    # plt.axis('off')
-    # # show the resulting image
-    # plt.imshow(reflected_img)
-    # plt.show()
 
