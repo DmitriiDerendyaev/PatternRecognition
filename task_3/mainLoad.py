@@ -9,7 +9,6 @@ window = sg.Window("Demo", interface.layout, size=(1300, 700)).Finalize()
 sg.theme('DarkTeal11')
 graph = window["-GRAPH-"]
 newGraph = window["-NEW_GRAPH-"]
-dragging = False
 start_point = end_point = prior_rect = None
 
 
@@ -40,9 +39,7 @@ while True:
         window["-TOUT-"].update(filename)
         img_before = cv2.imread(filename)
         img = img_before
-        # print(img)
-
-        func.displayGraph(img, graph)
+        func.show_image(img, graph)
     if values["-Scalling-"]:
         func.displayGraph(img_before, graph)
         valueX = float(values["-ScallingX-"])
@@ -61,37 +58,22 @@ while True:
 
     if values["-Rotation-"]:
         func.show_image(img_before, graph)
-
-        drawed = False
-
         if event == "-GRAPH-":  # if there's a "Graph" event, then it's a mouse
             x, y = values["-GRAPH-"]
             coordinatesXY = str(x), str(y)
-            if img_before.shape[0] < 450:
-                scale = 450 / img_before.shape[1]
-            else:
-                scale = 450 / img_before.shape[0]
-            dim = (round(img_before.shape[1] * scale), round(img_before.shape[0] * scale))
-            image = cv2.resize(img_before, dim, interpolation=cv2.INTER_LINEAR)
+            x_img = int(x - (450 - (func.find_size(img_before)).shape[1])/2)
+            y_img = int(y - (450 - (func.find_size(img_before)).shape[0])/2)
 
+            y_img = int(y_img*(img_before.shape[0]/func.find_size(img_before).shape[0]))
+            x_img = int(x_img*(img_before.shape[1]/func.find_size(img_before).shape[1]))
 
-            shiftX = (450 - image.shape[1]) / 2
-            shiftY = (450 - image.shape[0]) / 2
-            x_img = x - shiftX
-            y_img = y - shiftY
-
-            x_img = int(x_img * (1 / scale))
-            y_img = int(y_img * (1 / scale))
-            window["-coordinate_XY-"].update(values=coordinatesXY)
-            drawed = True
-        if drawed == True:
-            graph.draw_point((x, y), size=8, color="red")
+            graph.draw_circle(values['-GRAPH-'], 5, fill_color='red', line_color='black')
 
 
         if event == "-Angle-":
-            # cv2.imshow("fv", func.rotationFrame(img_before, angle, y, x))
-            print('-', x_img, y_img)
-            cv2.imshow("dvss", func.rotationFrame(img_before, values["-Angle-"], x_img, y_img))
+
+            func.show_image(func.rotationFrame(img_before, values["-Angle-"], x_img, y_img), newGraph)
+            graph.draw_circle(values['-GRAPH-'], 5, fill_color='red', line_color='black')
 
     if values["-Reflection-"]:
         func.show_image(img_before, graph)

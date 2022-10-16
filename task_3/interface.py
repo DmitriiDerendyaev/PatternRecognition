@@ -73,10 +73,6 @@ image_original_column = [
         graph_top_right=(450, 0),
         key="-GRAPH-",
         enable_events=True,
-        background_color='lightblue',
-        # background_color=None,
-        drag_submits=True,
-        right_click_menu=[[], ['Erase item', ]]
     ), ]
 ]
 

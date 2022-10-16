@@ -1,7 +1,7 @@
 from math import cos, sin
 
 import cv2
-from PIL import Image
+
 import io
 import numpy as np
 from numba import njit, jit, prange
@@ -25,17 +25,41 @@ def displayGraph(currentFrame, graph):
 
     graph.send_figure_to_back(img)
 
+def find_size(image):
+    if image.shape[1] > 450:
+        scale = 450 / image.shape[1]
+        dim = (round(image.shape[1] * scale), round(image.shape[0] * scale))
+        image = cv2.resize(image, dim, interpolation=cv2.INTER_LINEAR)
+
+    if image.shape[0] > 450:
+        scale = 450 / image.shape[0]
+        dim = (round(image.shape[1] * scale), round(image.shape[0] * scale))
+        image = cv2.resize(image, dim, interpolation=cv2.INTER_LINEAR)
+
+    if image.shape[0] < 450 and image.shape[1] < 450:
+        if image.shape[0] > image.shape[1]:
+            scale = 450 / image.shape[0]
+            dim = (round(image.shape[1] * scale), round(image.shape[0] * scale))
+            image = cv2.resize(image, dim, interpolation=cv2.INTER_LINEAR)
+
+        else:
+            scale = 450 / image.shape[1]
+            dim = (round(image.shape[1] * scale), round(image.shape[0] * scale))
+            image = cv2.resize(image, dim, interpolation=cv2.INTER_LINEAR)
+    return image
+
+
 def show_image(image, graph):
-    if image.shape[0] < 450:
+    if image.shape[1] > 450:
         scale = 450 / image.shape[1]
         dim = (round(image.shape[1] * scale), round(image.shape[0] * scale))
         image = cv2.resize(image, dim, interpolation=cv2.INTER_LINEAR)
         img_bytes = cv2.imencode('.png', image)[1].tobytes()
         graph.erase()
-        a_id = graph.draw_image(data=img_bytes, location=(0, int((450-image.shape[0])/2)-20))
+        a_id = graph.draw_image(data=img_bytes, location=(0, int((450-image.shape[0])/2)))
         graph.send_figure_to_back(a_id)
 
-    else:
+    if image.shape[0] > 450:
         scale = 450 / image.shape[0]
         dim = (round(image.shape[1] * scale), round(image.shape[0] * scale))
         image = cv2.resize(image, dim, interpolation=cv2.INTER_LINEAR)
@@ -43,6 +67,27 @@ def show_image(image, graph):
         graph.erase()
         a_id = graph.draw_image(data=img_bytes, location=(int((450-image.shape[1])/2), 0))
         graph.send_figure_to_back(a_id)
+
+    if image.shape[0] < 450 and image.shape[1] < 450:
+        if image.shape[0] > image.shape[1]:
+            scale = 450 / image.shape[0]
+            dim = (round(image.shape[1] * scale), round(image.shape[0] * scale))
+            image = cv2.resize(image, dim, interpolation=cv2.INTER_LINEAR)
+            img_bytes = cv2.imencode('.png', image)[1].tobytes()
+            graph.erase()
+            a_id = graph.draw_image(data=img_bytes, location=(int((450 - image.shape[1]) / 2), 0))
+            graph.send_figure_to_back(a_id)
+        else:
+            scale = 450 / image.shape[1]
+            dim = (round(image.shape[1] * scale), round(image.shape[0] * scale))
+            image = cv2.resize(image, dim, interpolation=cv2.INTER_LINEAR)
+            img_bytes = cv2.imencode('.png', image)[1].tobytes()
+            graph.erase()
+            a_id = graph.draw_image(data=img_bytes, location=(0, int((450 - image.shape[0]) / 2)))
+            graph.send_figure_to_back(a_id)
+
+
+
 
 
 def scallingFrameCV2(currentFrame, valueX, valueY, graph):
@@ -111,7 +156,7 @@ def rotationFrame(currentFrame, angle, center_X, center_Y):
     for x in prange(pictures.shape[1]):
         for y in prange(pictures.shape[0]):
             rotatingX = int(cos(angle) * (x - center_X) - sin(angle) * (y - center_Y) + center_X)
-            rotatingY = int(sin(angle) * (x - center_X) + cos(angle) * (y - center_Y) + center_X)
+            rotatingY = int(sin(angle) * (x - center_X) + cos(angle) * (y - center_Y) + center_Y)
             if rotatingX < pictures.shape[1]:
                 if rotatingY < pictures.shape[0]:
                     if rotatingX >= 0:
