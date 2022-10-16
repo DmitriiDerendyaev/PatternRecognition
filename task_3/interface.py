@@ -48,14 +48,19 @@ first_list_column = [
     [
         sg.Text("Angle:"),
         sg.Slider(range=(0, 3.14), enable_events=True, key="-Angle-", default_value=1, resolution=0.05,
-                  size=(25, 10), orientation='horizontal'),
+                  size=(15, 10), orientation='horizontal'),
+        sg.Listbox(values=[], key="-coordinate_XY-", size=(8,2)),
     ],
-    # [
-    #     sg.Text("Y:"),
-    #     sg.Slider(range=(0.1, 3), enable_events=True, key="-RotationY-", default_value=1, resolution=0.05,
-    #               size=(12, 10), orientation='horizontal'),
-    # ],
     [sg.HorizontalSeparator()],
+[
+        sg.Radio("Reflection", "RADIO1", enable_events=True, default=False, key="-Reflection-"),
+    ],
+    [
+        sg.Text("Vertical:"),
+        sg.In(size=(7, 1), enable_events=True, key="-Vertical-", default_text="1"),
+        sg.Text("Horizontal:"),
+        sg.In(size=(7, 1), enable_events=True, key="-Horizontal-", default_text="1"),
+    ],
 ]
 
 image_original_column = [

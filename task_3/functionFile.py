@@ -5,23 +5,45 @@ from PIL import Image
 import io
 import numpy as np
 from numba import njit, jit, prange
+import matplotlib.pyplot as plt
 # import interface
 # import PySimpleGUI as sg
+
 
 def displayGraph(currentFrame, graph):
     scale = 350 / currentFrame.shape[1]
     dim = (round(currentFrame.shape[1] * scale), round(currentFrame.shape[0] * scale))
 
-    correctFrame = cv2.resize(currentFrame, dim)
+    correctFrame = cv2.resize(currentFrame, dim, interpolation=cv2.INTER_LINEAR)
 
     frame_height, frame_width, channels = correctFrame.shape
 
     img_bytes = cv2.imencode('.png', correctFrame)[1].tobytes()
 
     graph.erase()
-    huy = graph.draw_image(data=img_bytes, location=(450/2-frame_width/2, 450/2-frame_height/2))
+    img = graph.draw_image(data=img_bytes, location=(450/2-frame_width/2, 450/2-frame_height/2))
 
-    graph.send_figure_to_back(huy)
+    graph.send_figure_to_back(img)
+
+def show_image(image, graph):
+    if image.shape[0] < 450:
+        scale = 450 / image.shape[1]
+        dim = (round(image.shape[1] * scale), round(image.shape[0] * scale))
+        image = cv2.resize(image, dim, interpolation=cv2.INTER_LINEAR)
+        img_bytes = cv2.imencode('.png', image)[1].tobytes()
+        graph.erase()
+        a_id = graph.draw_image(data=img_bytes, location=(0, int((450-image.shape[0])/2)-20))
+        graph.send_figure_to_back(a_id)
+
+    else:
+        scale = 450 / image.shape[0]
+        dim = (round(image.shape[1] * scale), round(image.shape[0] * scale))
+        image = cv2.resize(image, dim, interpolation=cv2.INTER_LINEAR)
+        img_bytes = cv2.imencode('.png', image)[1].tobytes()
+        graph.erase()
+        a_id = graph.draw_image(data=img_bytes, location=(int((450-image.shape[1])/2), 0))
+        graph.send_figure_to_back(a_id)
+
 
 def scallingFrameCV2(currentFrame, valueX, valueY, graph):
     scale = 350 / currentFrame.shape[1]
@@ -39,9 +61,9 @@ def scallingFrameCV2(currentFrame, valueX, valueY, graph):
     img_bytes = cv2.imencode('.png', correctFrame)[1].tobytes()
 
     graph.erase()
-    huy = graph.draw_image(data=img_bytes, location=(450 / 2 - frame_width / 2, 450 / 2 - frame_height / 2))
+    EVA = graph.draw_image(data=img_bytes, location=(450 / 2 - frame_width / 2, 450 / 2 - frame_height / 2))
 
-    graph.send_figure_to_back(huy)
+    graph.send_figure_to_back(EVA)
 
     return correctFrame
 
@@ -62,6 +84,7 @@ def scallingFrame(currentFrame, valueX, valueY):
 
     return pictures
 
+
 @njit(fastmath=True)
 def shearingFrame(currentFrame, shift_X, shift_Y):
     pictures = np.zeros(np.shape(currentFrame), np.uint8)
@@ -77,9 +100,13 @@ def shearingFrame(currentFrame, shift_X, shift_Y):
                             pictures[scallingY, scallingX] = currentFrame[y, x]
     return pictures
 
+
 @njit(fastmath=True)
-def rotationFrame(currentFrame, angle, center_X = 0, center_Y = 0):
+def rotationFrame(currentFrame, angle, center_X, center_Y):
     pictures = np.zeros(np.shape(currentFrame), np.uint8)
+
+    # center_Y = int(pictures.shape[1] / 2 + (pictures.shape[1] / 2) * center_Y)
+    # center_X = int(pictures.shape[0] / 2 + (pictures.shape[0] / 2) * center_X)
 
     for x in prange(pictures.shape[1]):
         for y in prange(pictures.shape[0]):
@@ -92,4 +119,51 @@ def rotationFrame(currentFrame, angle, center_X = 0, center_Y = 0):
                             pictures[rotatingY, rotatingX] = currentFrame[y, x]
     return pictures
 
+def reflectionFrame(currentFrame, verticalAxis, horizontalAxis):
+    pictures = np.zeros(np.shape(currentFrame), np.uint8)
+
+    for x in prange(pictures.shape[1]):
+        for y in prange(pictures.shape[0]):
+            newX = int(x * horizontalAxis + pictures.shape[0])
+            newY = int(y * verticalAxis + pictures.shape[1])
+            if newX < pictures.shape[1]:
+                if newY < pictures.shape[0]:
+                    if newX >= 0:
+                        if newY >= 0:
+                            pictures[newY, newX] = currentFrame[y, x]
+    cv2.imshow("fs", pictures)
+    return pictures
+
+def reflectionMatrix(currentFrame, verticalAxis, horizontalAxis):
+    img = cv2.cvtColor(currentFrame, cv2.COLOR_BGR2RGB)
+    # disable x & y axis
+    plt.axis('off')
+    # show the image
+    # plt.imshow(img)
+    # plt.show()
+    # get the image shape
+    rows, cols, dim = img.shape
+    if horizontalAxis == -1:
+        # transformation matrix for x-axis reflection
+        M = np.float32([[1, 0, 0],
+                        [0, -1, rows],
+                        [0, 0, 1]])
+        reflected_img = cv2.warpPerspective(img, M, (int(cols), int(rows)))
+        # cv2.imshow("hot", reflected_img)
+    elif verticalAxis == -1:
+    # transformation matrix for y-axis reflection
+        M = np.float32([[-1, 0, cols],
+                        [ 0, 1, 0   ],
+                        [ 0, 0, 1   ]])
+        reflected_img = cv2.warpPerspective(img, M, (int(cols), int(rows)))
+    return reflected_img
+        # cv2.imshow("ver", reflected_img)
+    # apply a perspective transformation to the image
+
+    # cv2.imshow("ver", reflected_img)
+    # # disable x & y axis
+    # plt.axis('off')
+    # # show the resulting image
+    # plt.imshow(reflected_img)
+    # plt.show()
 
