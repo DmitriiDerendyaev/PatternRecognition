@@ -46,7 +46,11 @@ while True:
         valueY = float(values["-ScallingY-"])
 
         # func.scallingFrameCV2(img, valueX, valueY, newGraph)
-        func.displayGraph(func.scallingFrame(img, valueX, valueY), newGraph)
+        if values["-Bilinear-"] == True:
+            func.displayGraph(func.bilinear_scalling(img, valueX, valueY), newGraph)
+        else:
+            func.displayGraph(func.scallingFrame(img, valueX, valueY), newGraph)
+
 
     if values["-Shearing-"]:
         func.displayGraph(img_before, graph)
@@ -71,9 +75,12 @@ while True:
 
 
         if event == "-Angle-":
-
-            func.show_image(func.rotationFrame(img_before, values["-Angle-"], x_img, y_img), newGraph)
-            graph.draw_circle(values['-GRAPH-'], 5, fill_color='red', line_color='black')
+            if values["-Bilinear-"]:
+                func.show_image(func.custom_rotation_bilinear(img_before, values["-Angle-"], y_img, x_img), newGraph)
+                graph.draw_circle(values['-GRAPH-'], 5, fill_color='red', line_color='black')
+            else:
+                func.show_image(func.rotationFrame(img_before, values["-Angle-"], x_img, y_img), newGraph)
+                graph.draw_circle(values['-GRAPH-'], 5, fill_color='red', line_color='black')
 
     if values["-Reflection-"]:
         func.show_image(img_before, graph)

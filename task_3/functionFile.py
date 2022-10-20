@@ -1,4 +1,4 @@
-from math import cos, sin
+from math import cos, sin, floor
 
 import cv2
 
@@ -106,9 +106,9 @@ def scallingFrameCV2(currentFrame, valueX, valueY, graph):
     img_bytes = cv2.imencode('.png', correctFrame)[1].tobytes()
 
     graph.erase()
-    EVA = graph.draw_image(data=img_bytes, location=(450 / 2 - frame_width / 2, 450 / 2 - frame_height / 2))
+    img = graph.draw_image(data=img_bytes, location=(450 / 2 - frame_width / 2, 450 / 2 - frame_height / 2))
 
-    graph.send_figure_to_back(EVA)
+    graph.send_figure_to_back(img)
 
     return correctFrame
 
@@ -127,8 +127,57 @@ def scallingFrame(currentFrame, valueX, valueY):
                 if scallingY < pictures.shape[0]:
                     pictures[scallingY, scallingX] = currentFrame[y, x]
 
+    # resPictures = np.zeros(np.shape(pictures), np.uint8)
+    # for x in prange(pictures.shape[1]):
+    #     for y in prange(pictures.shape[0]):
+    #         floorX = floor(x)
+    #         floorY = floor(y)
+    #         ratioX = x - floorX
+    #         ratioY = y - floorY
+    #         invertsXratio = 1 - ratioX
+    #         invertsYratio = 1 - ratioY
+    #         resPictures[scallingY, scallingX] = (pictures[x, y] * invertsYratio + pictures[x + 1, y] * ratioX) * invertsYratio + (pictures[x, y + 1] * invertsXratio + pictures[x + 1, y + 1] * ratioX) * ratioY
+
+
     return pictures
 
+
+@njit(fastmath=True, parallel=True)
+def bilinear_scalling(image, sX, sY):
+
+    new_image = np.zeros(image.shape, np.uint8)
+    for x in prange(image.shape[1]):
+        for y in prange(image.shape[0]):
+            new_x = int(x*sX)
+            if new_x >= new_image.shape[1]:
+                continue
+            if x < image.shape[1]-1:
+                new_next_x = int((x+1)*sX)
+                if new_next_x > image.shape[1]:
+                    new_next_x = image.shape[1]-1
+                for i in range(new_x, new_next_x):
+                    omega = (i-new_x)/(new_next_x-new_x)
+                    new_value = image[y, x] * (1 - omega) + image[y, x+1] * omega
+                    if i < image.shape[1]:
+                        new_image[y, i] = new_value
+
+    image = new_image
+    new_image = np.zeros(image.shape, np.uint8)
+    for x in prange(image.shape[1]):
+        for y in prange(image.shape[0]):
+            new_y = int(y*sY)
+            if new_y >= new_image.shape[0]:
+                continue
+            if y < image.shape[0]-1:
+                new_next_y = int((y+1)*sY)
+                if new_next_y > image.shape[0]:
+                    continue
+                for i in range(new_y, new_next_y):
+                    omega = (i-new_y)/(new_next_y-new_y)
+                    new_value = image[y, x] * (1 - omega) + image[y+1, x] * omega
+                    if i < image.shape[0]:
+                        new_image[i, x] = new_value
+    return new_image
 
 @njit(fastmath=True)
 def shearingFrame(currentFrame, shift_X, shift_Y):
@@ -163,6 +212,45 @@ def rotationFrame(currentFrame, angle, center_X, center_Y):
                         if rotatingY >= 0:
                             pictures[rotatingY, rotatingX] = currentFrame[y, x]
     return pictures
+
+@njit(fastmath=True)
+def custom_rotation_bilinear(image, angle, y_center, x_center):
+    new_image = np.zeros(image.shape, np.uint8)
+    # y_center = int(image.shape[0] / 2 + (image.shape[0] / 2) * y_center)
+    # x_center = int(image.shape[1] / 2 + (image.shape[1] / 2) * x_center)
+    for x in prange(image.shape[1]):
+        for y in prange(image.shape[0]):
+            new_x = int(cos(angle) * (x - x_center) - sin(angle) * (y - y_center) + x_center)
+            new_y = int(sin(angle) * (x - x_center) + cos(angle) * (y - y_center) + y_center)
+            if new_x < image.shape[1]:
+                if new_y < image.shape[0]:
+                    if new_x >= 0:
+                        if new_y >= 0:
+                            new_image[new_y, new_x] = image[y, x]
+
+    for y in prange(image.shape[0]):
+        flag = True
+        for x in prange(image.shape[1] - 1):
+            if new_image[y, x, 0] == 0 and new_image[y, x, 1] == 0 and new_image[y, x, 2] == 0:
+                if flag:
+                    continue
+                next_x = x
+                while new_image[y, next_x, 0] == 0 and new_image[y, next_x, 1] == 0 and new_image[
+                    y, next_x, 2] == 0:
+                    next_x += 1
+                    if next_x >= new_image.shape[1] - 1:
+                        break
+                    if next_x - x >= 10:
+                        break
+                for i in range(x, next_x):
+
+                    omega = (i - x) / (next_x - x)
+                    new_value = new_image[y, x - 1] * (1 - omega) + new_image[y, next_x] * omega
+                    if i < image.shape[1]:
+                        new_image[y, i] = new_value
+            else:
+                flag = False
+    return new_image
 
 def reflectionFrame(currentFrame, verticalAxis, horizontalAxis):
     pictures = np.zeros(np.shape(currentFrame), np.uint8)
