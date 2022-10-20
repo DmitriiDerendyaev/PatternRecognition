@@ -1,26 +1,56 @@
 import cv2
 import numpy as np
 
+
+def mouse_handler(event, x, y, flags, data):
+    if event == cv2.EVENT_LBUTTONDOWN:
+        cv2.circle(data['im'], (x, y), 25, (0, 0, 255), -1)
+        cv2.imshow("Image", data['im'])
+        if len(data['points']) == 4:
+            data['points'].append([x, y])
+
+
+def get_four_points(im):
+    data = {}
+    data['im'] = im.copy()
+    data['points'] = []
+
+    cv2.imshow("Image", im)
+    cv2.setMouseCallback("Image", mouse_handler, data)
+    cv2.waitKey(0)
+
+    points = np.float32(data['points'])
+    return points
+
+
 if __name__ == '__main__':
-    # Read source image.
-    im_src = cv2.imread('book2.jpg')
-    # Four corners of the book in source image
-    pts_src = np.array([[141, 131], [480, 159], [493, 630], [64, 601]])
+    # Read in the image.
+    im_src = cv2.imread('book1.jpg')
 
-    # Read destination image.
-    im_dst = cv2.imread('book1.jpg')
-    # Four corners of the book in destination image.
-    pts_dst = np.array([[318, 256], [534, 372], [316, 670], [73, 473]])
+    # Show image and wait for 4 clicks.
+    pts_src = get_four_points(im_src)
 
-    # Calculate Homography
-    h, status = cv2.findHomography(pts_src, pts_dst)
+    # Book size
+    size = (1500, 2000)
 
-    # Warp source image to destination based on homography
-    im_out = cv2.warpPerspective(im_src, h, (im_dst.shape[1], im_dst.shape[0]))
+    # Destination coordinates located in the center of the image
+    pts_dst = np.float32(
+        [
+            [im_src.shape[1] / 2 - size[0] / 2, im_src.shape[0] / 2 - size[1] / 2],
+            [im_src.shape[1] / 2 + size[0] / 2, im_src.shape[0] / 2 - size[1] / 2],
+            [im_src.shape[1] / 2 + size[0] / 2, im_src.shape[0] / 2 + size[1] / 2],
+            [im_src.shape[1] / 2 - size[0] / 2, im_src.shape[0] / 2 + size[1] / 2]
+        ]
+    )
 
-    # Display images
-    cv2.imshow("Source Image", im_src)
-    cv2.imshow("Destination Image", im_dst)
+    # Calculate the homography
+    M = cv2.getPerspectiveTransform(pts_src, pts_dst)
+
+    # Warp source image to destination
+    im_out = cv2.warpPerspective(im_src, M, (im_src.shape[1], im_src.shape[0]))
+
+    # Show output
     cv2.imshow("Warped Source Image", im_out)
+    cv2.imwrite("book_bird_eye_view.jpg", im_out)
 
     cv2.waitKey(0)
