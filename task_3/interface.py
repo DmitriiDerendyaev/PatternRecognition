@@ -52,7 +52,7 @@ first_list_column = [
         sg.Listbox(values=[], key="-coordinate_XY-", size=(8,2)),
     ],
     [sg.HorizontalSeparator()],
-[
+    [
         sg.Radio("Reflection", "RADIO1", enable_events=True, default=False, key="-Reflection-"),
     ],
     [
@@ -61,6 +61,13 @@ first_list_column = [
         sg.Text("Horizontal:"),
         sg.In(size=(7, 1), enable_events=True, key="-Horizontal-", default_text="1"),
     ],
+    [sg.HorizontalSeparator()],
+    [
+        sg.Radio("Image Projection", "RADIO1", enable_events=True, default=False, key="-Projection-"),
+    ],
+    [
+        sg.Button("Print HOMO", key="-HOMO-"),
+    ]
 ]
 
 image_original_column = [
@@ -73,6 +80,7 @@ image_original_column = [
         graph_top_right=(450, 0),
         key="-GRAPH-",
         enable_events=True,
+        right_click_menu=[[], ['Erase item-Origin', ]]
     ), ]
 ]
 
@@ -85,10 +93,9 @@ image_OpenCV_column = [
         graph_top_right=(450, 0),
         key="-NEW_GRAPH-",
         enable_events=True,
-        background_color='lightblue',
         # background_color=None,
         drag_submits=True,
-        right_click_menu=[[], ['Erase item', ]]
+        right_click_menu=[[], ['Erase item-CV2', ]]
     ), ]
 ]
 
