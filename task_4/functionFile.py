@@ -39,11 +39,11 @@ def show_image(image, graph):
             a_id = graph.draw_image(data=img_bytes, location=(0, int((450 - image.shape[0]) / 2)))
             graph.send_figure_to_back(a_id)
 
-def splitFilter(currentFrame, choosenChannel, redImg=None):
+
+def splitFilter(currentFrame, choosenChannel):
     currentFrame = cv2.cvtColor(currentFrame, cv2.COLOR_BGR2RGB)
 
     redChannel, greenChannel, blueChannel = cv2.split(currentFrame)
-    print("splited channel")
 
     if (choosenChannel == 0):
         return redChannel
@@ -52,12 +52,42 @@ def splitFilter(currentFrame, choosenChannel, redImg=None):
     elif (choosenChannel == 2):
         return blueChannel
     else:
+        print("Out of bound")
         return currentFrame
 
 def BrightContrBlur(img, contrastValue, brightnessValue, gaussianValue):
     imgResult = cv2.addWeighted(img, contrastValue, img, 0, brightnessValue)
 
-    imgResult = cv2.GaussianBlur(src=imgResult, ksize=(gaussianValue, gaussianValue), sigmaX=0, sigmaY=0,
-                                      borderType=cv2.BORDER_DEFAULT)
+    imgResult = cv2.GaussianBlur(imgResult, (gaussianValue, gaussianValue),0)
 
     return imgResult
+
+def preImage(event, values, startFrame):
+
+
+    brightnessValue = values["-BrightnessValue-"]
+    contrastValue = values["-ContrastValue-"]
+    gaussianValue = int((values["-BlurValue-"] * 2) - 1)
+
+    # print(brightnessValue, contrastValue, gaussianValue)
+
+    img_before = BrightContrBlur(startFrame, contrastValue, brightnessValue, gaussianValue)
+
+    if values["-MonoChannel-"]:
+        imgToPrint = cv2.cvtColor(img_before, cv2.COLOR_BGR2GRAY)
+    elif values["-RedChannel-"]:
+        imgToPrint = splitFilter(img_before, 0)
+    elif values["-GreenChannel-"]:
+        imgToPrint = splitFilter(img_before, 1)
+    elif values["-BlueChannel-"]:
+        imgToPrint = splitFilter(img_before, 2)
+    else:
+        imgToPrint = startFrame
+
+    if values["-ThresholdBinary-"]:
+        thresholdValue = int(values["-ThresholdValue-"])
+        ret, imgToPrintTH = cv2.threshold(imgToPrint, thresholdValue, 255, cv2.THRESH_BINARY)
+
+        return imgToPrintTH
+    else:
+        return imgToPrint

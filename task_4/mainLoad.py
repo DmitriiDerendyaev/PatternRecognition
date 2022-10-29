@@ -12,10 +12,10 @@ sg.theme('DarkTeal11')
 graph = window["-GRAPH-"]
 newGraph = window["-NEW_GRAPH-"]
 start_point = end_point = prior_rect = None
-
+isImg = False
 
 while True:
-    event, values = window.read()
+    event, values = window.read(timeout=20)
 
     if event == "Exit" or event == sg.WIN_CLOSED:
         break
@@ -40,52 +40,44 @@ while True:
         )
         window["-TOUT-"].update(filename)
         img_before = cv2.imread(filename)
+        isImg = True
         imgDefault = img_before
         imgToPrint = img_before
+        imgToPrintTH = img_before
         func.show_image(imgDefault, graph)
 
+    if event != "--TIMEOUT--" and event != "-FOLDER-" and isImg:
+        preImage = func.preImage(event, values, img_before)
+        func.show_image(preImage, newGraph)
 
-    if event == "-BrightnessValue-" or event == "-ContrastValue-" or event == "-BlurValue-":
-        brightnessValue = values["-BrightnessValue-"]
-        contrastValue = values["-ContrastValue-"]
-        gaussianValue = int((values["-BlurValue-"] * 2) - 1)
-        # img_before = cv2.addWeighted(imgDefault, contrastValue, imgDefault, 0, brightnessValue)
+    if values["-FindContours-"]:
+        imgContours = imgDefault.copy()
+        contours, hierarchy = cv2.findContours(preImage.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        print(len(contours))
+        cv2.drawContours(imgContours, contours, -1, (0,255,0), 3)
+        func.show_image(imgContours, newGraph)
 
-        img_before = func.BrightContrBlur(img_before, contrastValue, brightnessValue, gaussianValue)
-        func.show_image(img_before, newGraph)
+    # if values["-ApproximationContours-"]:
+    #     approximationValue = values["-ApproximationValue-"]
+    #     countAppr = []
+    #     for count in contours:
+    #         epsilon = (approximationValue / 100) * cv2.arcLength(count, True)
+    #         print(epsilon)
+    #         # count = cv2.approxPolyDP(count, epsilon, True)
+    #         countAppr.append(cv2.approxPolyDP(count, epsilon, True))
+    #     cv2.drawContours(imgContours, countAppr, -1, (0, 0, 255), 3)
+    #     func.show_image(imgContours, newGraph)
 
-        # if event == "-BlurValue-":
-        #     gaussianValue = int((values["-BlurValue-"]*2) - 1)
-        #     print(gaussianValue)
-        #     # imgToPrintBlur = cv2.GaussianBlur(img_before, (gaussianValue, gaussianValue), cv2.BORDER_DEFAULT)
-        #     imgToPrintBlur = cv2.GaussianBlur(src=img_before, ksize=(gaussianValue, gaussianValue), sigmaX=0, sigmaY=0,
-        #                                       borderType= cv2.BORDER_DEFAULT)
-        #     func.show_image(imgToPrintBlur, newGraph)
-        # else:
-        #     func.show_image(img_before, newGraph)
+    if values["-ApproximationContours-"]:
+        approximationValue = values["-ApproximationValue-"]
+        countAppr = []
+        for count in contours:
+            epsilon = (approximationValue / 100) * cv2.arcLength(count, True)
+            print(epsilon)
+            # count = cv2.approxPolyDP(count, epsilon, True)
+            countAppr.append(cv2.approxPolyDP(count, epsilon, True))
+        cv2.drawContours(imgContours, countAppr, -1, (0, 0, 255), 3)
+        func.show_image(imgContours, newGraph)
 
-
-
-
-    if values["-MonoChannel-"] or values["-RedChannel-"] or values["-BlueChannel-"] or values["-GreenChannel-"]:
-
-        if values["-MonoChannel-"]:
-            imgToPrint = cv2.cvtColor(img_before,cv2.COLOR_BGR2GRAY)
-        if values["-RedChannel-"]:
-            imgToPrint = func.splitFilter(img_before, 0)
-        if values["-GreenChannel-"]:
-            imgToPrint = func.splitFilter(img_before, 1)
-        if values["-BlueChannel-"]:
-            imgToPrint = func.splitFilter(img_before, 2)
-
-        func.show_image(imgToPrint, newGraph)
-
-        # if event == "-BlurValue-":
-        #     gaussianValue = values["-BlurValue-"]
-        #     imgToPrintBlur = cv2.GaussianBlur(imgToPrint, (gaussianValue, gaussianValue), cv2.BORDER_DEFAULT)
-        #
-        #     func.show_image(imgToPrintBlur, newGraph)
-        # else:
-        #     func.show_image(imgToPrint, newGraph)
 
 window.close()

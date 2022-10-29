@@ -20,6 +20,7 @@ first_list_column = [
         sg.Radio("Green", "RADIO1", enable_events=True, default=False, key="-GreenChannel-"),
         sg.Radio("Blue", "RADIO1", enable_events=True, default=False, key="-BlueChannel-"),
     ],
+    [sg.HorizontalSeparator()],
     [
         sg.Text("Brightness:"),
         sg.Push(),
@@ -33,6 +34,18 @@ first_list_column = [
     [
     sg.Text("Blur:"),
         sg.Slider(range=(1, 25), enable_events=True, key="-BlurValue-", default_value=1, resolution=1, size=(15,10), orientation='horizontal'),
+    ],
+    [sg.HorizontalSeparator()],
+    [
+        sg.Checkbox("ThresholdBinary", enable_events=True, key="-ThresholdBinary-"),
+        sg.Slider(range=(0, 255), enable_events=True, key="-ThresholdValue-", default_value=1, resolution=1, size=(15,10), orientation='horizontal'),
+    ],
+    [
+        sg.Checkbox("Find contours", enable_events=True, key="-FindContours-")
+    ],
+    [
+        sg.Checkbox("Approximation", enable_events=True, key="-ApproximationContours-"),
+        sg.Slider(range=(0, 10), enable_events=True, key="-ApproximationValue-", default_value=1, resolution=1, size=(15,10), orientation='horizontal'),
     ]
 ]
 
