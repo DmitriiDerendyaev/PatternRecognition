@@ -10,7 +10,6 @@ import PySimpleGUI as sg
 import os.path
 import cv2
 import random, string
-from PIL import Image
 import io
 ti.init(arch=ti.cpu)
 
