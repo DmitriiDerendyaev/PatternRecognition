@@ -52,32 +52,62 @@ while True:
 
     if values["-FindContours-"]:
         imgContours = imgDefault.copy()
-        contours, hierarchy = cv2.findContours(preImage.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        print(len(contours))
-        cv2.drawContours(imgContours, contours, -1, (0,255,0), 3)
+        contours, hierarchy = cv2.findContours(preImage.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        # print((contours))
+        cv2.drawContours(imgContours, contours, -1, (0, 255, 0), 3)
         func.show_image(imgContours, newGraph)
 
-    # if values["-ApproximationContours-"]:
-    #     approximationValue = values["-ApproximationValue-"]
-    #     countAppr = []
-    #     for count in contours:
-    #         epsilon = (approximationValue / 100) * cv2.arcLength(count, True)
-    #         print(epsilon)
-    #         # count = cv2.approxPolyDP(count, epsilon, True)
-    #         countAppr.append(cv2.approxPolyDP(count, epsilon, True))
-    #     cv2.drawContours(imgContours, countAppr, -1, (0, 0, 255), 3)
-    #     func.show_image(imgContours, newGraph)
-
     if values["-ApproximationContours-"]:
+        apprCountur = imgDefault.copy()
         approximationValue = values["-ApproximationValue-"]
         countAppr = []
         for count in contours:
             epsilon = (approximationValue / 100) * cv2.arcLength(count, True)
-            print(epsilon)
             # count = cv2.approxPolyDP(count, epsilon, True)
             countAppr.append(cv2.approxPolyDP(count, epsilon, True))
-        cv2.drawContours(imgContours, countAppr, -1, (0, 0, 255), 3)
-        func.show_image(imgContours, newGraph)
+        cv2.drawContours(apprCountur, countAppr, -1, (0, 0, 255), 3)
+        func.show_image(apprCountur, newGraph)
 
+    areaValue = values["-AreaValue-"] * 1000
+    if values["-Triangle-"]:
+        apprCounturTri = imgDefault.copy()
+        countApprTri = []
+        counter = 0
+        for count in countAppr:
+            # print(len(count))
+            area = cv2.contourArea(count)
+            if ((len(count) == 3) & (areaValue > area > 5000)):
+                countApprTri.append(count)
+                counter += 1
+        window['-OUTPUT-'].update(counter)
+        cv2.drawContours(apprCounturTri, countApprTri, -1, (255, 0, 0), 3)
+        func.show_image(apprCounturTri, newGraph)
+    elif values["-Rectangle-"]:
+        apprCounturRec = imgDefault.copy()
+        countApprRec = []
+        counter = 0
+        for count in countAppr:
+            if ((len(count) == 4) & (areaValue > area > 5000)):
+                countApprRec.append(count)
+                counter += 1
+        window['-OUTPUT-'].update(counter)
+        cv2.drawContours(apprCounturRec, countApprRec, -1, (255, 0, 0), 3)
+        func.show_image(apprCounturRec, newGraph)
+    elif values["-Round-"]:
+        apprCounturRound = imgDefault.copy()
+        countApprRound = []
+        counter  = 0
+        for contour in countAppr:
+            approx = cv2.approxPolyDP(contour, 0.01 * cv2.arcLength(contour, True), True)
+            area = cv2.contourArea(contour)
+            if ((len(contour) > 8) & (50000 > area > 5000)):
+                countApprRound.append(contour)
+                counter += 1
+        window['-OUTPUT-'].update(counter)
+        cv2.drawContours(apprCounturRound, countApprRound, -1, (255, 0, 0), 2)
+        func.show_image(apprCounturRound, newGraph)
+
+    if event == "Check":
+        print((contours))
 
 window.close()

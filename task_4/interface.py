@@ -32,7 +32,7 @@ first_list_column = [
                   size=(15,10), orientation='horizontal'),
     ],
     [
-    sg.Text("Blur:"),
+        sg.Text("Blur:"),
         sg.Slider(range=(1, 25), enable_events=True, key="-BlurValue-", default_value=1, resolution=1, size=(15,10), orientation='horizontal'),
     ],
     [sg.HorizontalSeparator()],
@@ -45,7 +45,22 @@ first_list_column = [
     ],
     [
         sg.Checkbox("Approximation", enable_events=True, key="-ApproximationContours-"),
-        sg.Slider(range=(0, 10), enable_events=True, key="-ApproximationValue-", default_value=1, resolution=1, size=(15,10), orientation='horizontal'),
+        sg.Slider(range=(0, 10), enable_events=True, key="-ApproximationValue-", default_value=4, resolution=1, size=(15,10), orientation='horizontal'),
+    ],
+    [sg.HorizontalSeparator()],
+    [
+        sg.Text("Area:"),
+        sg.Slider(range=(6, 100), enable_events=True, key="-AreaValue-", default_value=1, resolution=1, size=(15,10), orientation='horizontal'),
+    ],
+    [
+        sg.Checkbox("Triangle", enable_events=True, key="-Triangle-"),
+        sg.Checkbox("Rectangle", enable_events=True, key="-Rectangle-"),
+        sg.Checkbox("Round", enable_events=True, key="-Round-"),
+    ],
+    [
+        sg.Text("The program found:"),
+        sg.Text(size=(1,1), key='-OUTPUT-'),
+        sg.Text("elements"),
     ]
 ]
 
