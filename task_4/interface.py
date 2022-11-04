@@ -61,7 +61,15 @@ first_list_column = [
         sg.Text("The program found:"),
         sg.Text(size=(1,1), key='-OUTPUT-'),
         sg.Text("elements"),
-    ]
+    ],
+    [
+        sg.Checkbox("ThresholdBinary", enable_events=True, key="-ThresholdBinaryText-"),
+        sg.Slider(range=(0, 255), enable_events=True, key="-ThresholdValueText-", default_value=1, resolution=1, size=(15,10), orientation='horizontal'),
+    ],
+    [
+        sg.Checkbox("Dilate", enable_events=True, key="-DilateText-"),
+        sg.Slider(range=(0, 10), enable_events=True, key="-DilateText-", default_value=1, resolution=1, size=(15,10), orientation='horizontal'),
+    ],
 ]
 
 image_original_column = [
