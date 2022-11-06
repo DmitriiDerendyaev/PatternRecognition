@@ -7,7 +7,7 @@ import PySimpleGUI as sg
 import os.path
 import cv2
 
-window = sg.Window("Demo", interface.layout, size=(1300, 700)).Finalize()
+window = sg.Window("Task 4", interface.layout, size=(1300, 700)).Finalize()
 sg.theme('DarkTeal11')
 graph = window["-GRAPH-"]
 newGraph = window["-NEW_GRAPH-"]
@@ -129,16 +129,4 @@ while True:
         except:
             pass
 
-    if values["-ThresholdBinaryText-"]:
-        thresholdValue = int(values["-ThresholdValueText-"])
-        imgToPrint = cv2.cvtColor(imgDefault, cv2.COLOR_BGR2GRAY)
-        ret, imgToPrintTH = cv2.threshold(imgToPrint, thresholdValue, 255, cv2.THRESH_BINARY)
-
-        func.show_image(imgToPrintTH, newGraph)
-
-    if values["-DilateText-"]:
-        dilateValue = int(values["-DilateText-"])
-        kernel = np.ones((dilateValue, dilateValue), np.uint8)
-        dilateImg = cv2.dilate(imgToPrintTH, kernel, iterations=1)
-        func.show_image(dilateImg, newGraph)
 window.close()
