@@ -7,7 +7,13 @@ import PySimpleGUI as sg
 import os.path
 import cv2
 
-window = sg.Window("Demo", interface.layout, size=(1300, 700)).Finalize()
+import pytesseract
+import matplotlib.pyplot as plt
+from PIL import Image
+
+pytesseract.pytesseract.tesseract_cmd = 'C:/Program Files/Tesseract-OCR/tesseract.exe'
+
+window = sg.Window("Task 5", interface.layout, size=(1300, 700)).Finalize()
 sg.theme('DarkTeal11')
 graph = window["-GRAPH-"]
 newGraph = window["-NEW_GRAPH-"]
@@ -48,3 +54,47 @@ while True:
             func.show_image(imgDefault, graph)
         except:
             pass
+
+    if values["-ThresholdBinaryText-"]:
+        thresholdValue = int(values["-ThresholdValueText-"])
+        imgToPrint = cv2.cvtColor(imgDefault, cv2.COLOR_BGR2GRAY)
+        ret, imgToPrintTH = cv2.threshold(imgToPrint, thresholdValue, 255, cv2.THRESH_BINARY)
+        imgToPrintTH = 255 - imgToPrintTH
+
+        func.show_image(imgToPrintTH, newGraph)
+
+    if values["-DilateText-"]:
+        dilateValue = int(values["-DilateTextValue-"])
+        print(dilateValue)
+        kernel = np.ones((dilateValue, dilateValue), np.uint8)
+        dilateImg = cv2.dilate(imgToPrintTH, kernel, iterations=1)
+        func.show_image(dilateImg, newGraph)
+
+    if values["-FindContours-"]:
+        imgContours = imgDefault.copy()
+        newRectContours = np.zeros(imgContours.shape)
+        contours, hierarchy = cv2.findContours(dilateImg.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        # print((contours))
+        cv2.drawContours(imgContours, contours, -1, (0, 255, 0), 3)
+        func.show_image(imgContours, newGraph)
+        if values["-Find RECT-"]:
+            contApprRec = []
+            areaValue = int(values["-AreaValue-"])
+            for contour in contours:
+                area = cv2.contourArea(contour)
+                if area > areaValue:
+                    rect = x, y, w, h = cv2.boundingRect(contour)
+                    cv2.rectangle(imgContours, (x, y), (x + w, y + h), (0, 0, 255), 2)
+                    contApprRec.append(rect)
+            func.show_image(imgContours, newGraph)
+
+            # string = pytesseract.image_to_string(imgContours)
+            # string = pytesseract.image_to_string(contApprRec[0])
+            func.copyRect(imgContours, newRectContours, rect, rect)
+            cv2.imshow("f", newRectContours)
+            string = pytesseract.image_to_string(newRectContours)
+            # печатаем
+            print(string)
+
+
+window.close()
