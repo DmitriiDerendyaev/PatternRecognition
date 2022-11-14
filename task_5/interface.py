@@ -16,11 +16,13 @@ first_list_column = [
     ],
     [
         sg.Checkbox("ThresholdBinary", enable_events=True, key="-ThresholdBinaryText-"),
-        sg.Slider(range=(0, 254), enable_events=True, key="-ThresholdValueText-", default_value=1, resolution=1, size=(15,10), orientation='horizontal'),
+        sg.Slider(range=(0, 254), enable_events=True, key="-ThresholdValueText-", default_value=1, resolution=1,
+                  size=(15, 10), orientation='horizontal'),
     ],
     [
         sg.Checkbox("Dilate", enable_events=True, key="-DilateText-"),
-        sg.Slider(range=(0, 30), enable_events=True, key="-DilateTextValue-", default_value=1, resolution=1, size=(15,10), orientation='horizontal'),
+        sg.Slider(range=(0, 40), enable_events=True, key="-DilateTextValue-", default_value=1, resolution=1,
+                  size=(15, 10), orientation='horizontal'),
     ],
     [
         sg.Checkbox("Find contours", enable_events=True, key="-FindContours-"),
@@ -28,9 +30,42 @@ first_list_column = [
     [
         sg.Checkbox("RECT", enable_events=True, key="-Find RECT-"),
         sg.Text("Area:"),
-        sg.Slider(range=(50, 10000), enable_events=True, key="-AreaValue-", default_value=1, resolution=1, size=(15,10), orientation='horizontal'),
+        sg.Slider(range=(1, 10000), enable_events=True, key="-AreaValue-", default_value=1, resolution=1, size=(15, 10),
+                  orientation='horizontal'),
     ],
+    [
+        sg.Text("Recognized text:"),
+    ],
+    [
+        sg.Text(size=(25, 5), key='-OUTPUT-'),
+    ],
+]
+
+second_list_column = [
+    [
+        sg.Text("Video Folder"),
+        sg.In(size=(15, 1), enable_events=True, key="-FOLDER_VIDEO-"),
+        sg.FolderBrowse(),
+    ],
+    [
+        sg.Listbox(
+            values=[], enable_events=True, size=(35, 15),
+            key="-FILE LIST VIDEO-"
+        )
+    ],
+    [
+        sg.Button("Get camera", key="-GetCamera-"),
+        sg.Checkbox("Show Camera", enable_events=True, key="-ShowCamera-"),
+        sg.Push(),
+    ],
+    [
+        sg.Button("Get video", key="-GetVideo-"),
+        sg.Checkbox("Show Video", enable_events=True, key="-ShowVideo-"),
+        sg.Push(),
     ]
+
+
+]
 
 image_original_column = [
     [sg.Text("Choose an image from list:")],
@@ -61,9 +96,27 @@ image_OpenCV_column = [
     ), ]
 ]
 
+video_DetectorFace = [
+    [sg.Text("Video:")],
+    [sg.Text(size=(40, 1), key="-TOUT-")],
+    # [sg.Image(key="-IMAGE-")],
+    [sg.Graph(
+        canvas_size=(450, 450),
+        graph_bottom_left=(0, 450),
+        graph_top_right=(450, 0),
+        key="-GRAPH-",
+        enable_events=True,
+        right_click_menu=[[], ['Erase item-Origin', ]]
+    ), ]
+
+]
+
+
 layout = [
     [
-        sg.Column(first_list_column, element_justification='c', size=(300, 700), scrollable=True),
+        sg.TabGroup([[sg.Tab('RecognitionText', first_list_column, title_color='Grey', border_width=10,
+                             tooltip='Recognition text', element_justification='center'),
+                      sg.Tab('Face detector', second_list_column, title_color='Grey')]]),
         sg.VSeparator(),
         sg.Column(image_original_column),
         sg.VSeparator(),
