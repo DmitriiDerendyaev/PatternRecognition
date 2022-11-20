@@ -64,8 +64,6 @@ def copyRect(src, dst, srcRect, dstRect,
              interpolation=cv2.INTER_LINEAR):
     x0, y0, w0, h0 = srcRect
     x1, y1, w1, h1 = dstRect
-    # Resize the contents of the source sub-rectangle.
-    # Put the result in the destination sub-rectangle.
     dst[y1:y1 + h1, x1:x1 + w1] = \
         cv2.resize(src[y0:y0 + h0, x0:x0 + w0], (w1, h1),
                    interpolation=interpolation)
@@ -104,3 +102,32 @@ def draw_found_faces(detected, image, color: tuple):
             color,
             thickness=2
         )
+
+def reSizeMask(image, sizeMask):
+    if image.shape[1] > sizeMask:
+        scale = sizeMask / image.shape[1]
+        dim = (round(image.shape[1] * scale), round(image.shape[0] * scale))
+        image = cv2.resize(image, dim, interpolation=cv2.INTER_LINEAR)
+
+    if image.shape[0] > sizeMask:
+        scale = sizeMask / image.shape[0]
+        dim = (round(image.shape[1] * scale), round(image.shape[0] * scale))
+        image = cv2.resize(image, dim, interpolation=cv2.INTER_LINEAR)
+
+    if image.shape[0] < sizeMask and image.shape[1] < sizeMask:
+        if image.shape[0] > image.shape[1]:
+            scale = sizeMask / image.shape[0]
+            dim = (round(image.shape[1] * scale), round(image.shape[0] * scale))
+            image = cv2.resize(image, dim, interpolation=cv2.INTER_LINEAR)
+
+        else:
+            scale = sizeMask / image.shape[1]
+            dim = (round(image.shape[1] * scale), round(image.shape[0] * scale))
+            image = cv2.resize(image, dim, interpolation=cv2.INTER_LINEAR)
+    return image
+
+def draw_mask_faces(detected, image, mask):
+    for (x, y, width, height) in detected:
+        newMask = reSizeMask(mask, width)
+        heightMask, widthMask= newMask.shape[:2]
+        image[y:y+heightMask, x:x+widthMask] = newMask

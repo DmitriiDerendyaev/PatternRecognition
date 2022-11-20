@@ -62,7 +62,12 @@ second_list_column = [
         sg.Button("Get video", key="-GetVideo-"),
         sg.Checkbox("Show Video", enable_events=True, key="-ShowVideo-"),
         sg.Push(),
-    ]
+    ],
+    [
+        sg.Push(),
+        sg.Checkbox("Add mask", enable_events=True, key="-AddMask-"),
+        sg.Push(),
+    ],
 
 
 ]

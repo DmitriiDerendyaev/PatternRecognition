@@ -126,7 +126,7 @@ while True:
                 for contour in contours:
                     area = cv2.contourArea(contour)
                     rect = x, y, w, h = cv2.boundingRect(contour)
-                    if x_img > x and y_img > y and x_img < x+w and y_img < y+h:
+                    if x < x_img < x + w and y < y_img < y + h:
                         string = pytesseract.image_to_string(imgContours[y:y+h, x:x+w].copy())
                     cv2.rectangle(imgContours, (x, y), (x + w, y + h), (0, 0, 255), 2)
                     contApprRec.append(rect)
@@ -144,7 +144,11 @@ while True:
         grayscale_image = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
         detected_faces = face_cascade.detectMultiScale(image=grayscale_image, scaleFactor=1.3, minNeighbors=4)
-        func.draw_found_faces(detected_faces, frame, (0, 0, 255))
+        if values["-AddMask-"]:
+            maskImage = cv2.imread("face.png")
+            func.draw_mask_faces(detected_faces, frame, maskImage)
+        else:
+            func.draw_found_faces(detected_faces, frame, (0, 0, 255))
         func.show_image(frame, newGraph)
 
         if cv2.waitKey(1) == 27:
@@ -157,10 +161,16 @@ while True:
         grayscale_image = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
         detected_faces = face_cascade.detectMultiScale(image=grayscale_image, scaleFactor=1.3, minNeighbors=4)
-        func.draw_found_faces(detected_faces, frame, (0, 0, 255))
+        if values["-AddMask-"]:
+            maskImage = cv2.imread("face.png")
+            func.draw_mask_faces(detected_faces, frame, maskImage)
+        else:
+            func.draw_found_faces(detected_faces, frame, (0, 0, 255))
         func.show_image(frame, newGraph)
 
         if cv2.waitKey(1) == 27:
             break
+
+
 
 window.close()
