@@ -120,6 +120,6 @@ while True:
         tot_feature_matches = len(number_of_matches)
 
         output = func.display_output(gray_pic1, key_pt1, gray_pic2, key_pt2, number_of_matches)
-
-        func.show_image(output,newGraph)
+        cv2.imshow("fff", output)
+        # func.show_image(output,newGraph)
 
