@@ -49,7 +49,7 @@ while True:
         valueX = float(values["-ScallingX-"])
         valueY = float(values["-ScallingY-"])
 
-        # func.scallingFrameCV2(img, valueX, valueY, newGraph)
+
         if values["-Bilinear-"] == True:
             func.displayGraph(func.bilinear_scalling(img, valueX, valueY), newGraph)
         else:
@@ -66,7 +66,7 @@ while True:
 
     if values["-Rotation-"]:
         func.show_image(img_before, graph)
-        if event == "-GRAPH-":  # if there's a "Graph" event, then it's a mouse
+        if event == "-GRAPH-":
             x, y = values["-GRAPH-"]
             coordinatesXY = str(x), str(y)
             x_img = int(x - (450 - (func.find_size(img_before)).shape[1])/2)
@@ -93,7 +93,7 @@ while True:
         horizontal = int(values["-Horizontal-"])
 
         func.show_image(func.reflectionMatrix(img_before, vertical, horizontal), newGraph)
-        # func.reflectionMatrix(img_before, vertical, horizontal)
+
 
 
     if values["-Projection-"]:
@@ -118,6 +118,7 @@ while True:
 
                 graph.draw_circle(values['-GRAPH-'], 5, fill_color='red', line_color='black')
                 first_mas = np.append(first_mas, [[x_img, y_img]], axis=0)
+                print(first_mas)
                 graph.draw_circle(values['-GRAPH-'], 5, fill_color='red', line_color='black')
             if first_mas.shape[0] >= 4:
                 print(first_mas)
@@ -138,7 +139,6 @@ while True:
             homo = cv2.getPerspectiveTransform(first_mas, second_mas)
 
             homo_image = cv2.warpPerspective(img_before, homo, (img_before.shape[0], img_before.shape[1]))
-            # cv2.imshow("srtg", homo_image)
             func.show_image(homo_image, newGraph)
 
 
