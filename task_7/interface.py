@@ -20,7 +20,7 @@ first_list_column = [
     ],
     [
         sg.Radio("Points by GFTT", enable_events=True, key="-PointsGFTT-", group_id="RADIO_02"),
-        sg.Radio("Points by Brisk", enable_events=True, key="-PointsBRISK-", group_id="RADIO_02")
+        sg.Radio("Trace point", enable_events=True, key="-PointsBRISK-", group_id="RADIO_02")
     ]
 ]
 
